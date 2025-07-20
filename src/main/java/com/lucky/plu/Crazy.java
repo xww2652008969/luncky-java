@@ -276,12 +276,12 @@ public class Crazy extends BasePlugins {
 
     @Override
     public void push() {
-        CronUtil.schedule("0 0 * * * *", (Task) () -> miao());
-        CronUtil.setMatchSecond(true);
-        CronUtil.start();
-        for (; ; ) {
-
-        }
+//        CronUtil.schedule("0 0 * * * *", (Task) () -> miao());
+//        CronUtil.setMatchSecond(true);
+//        CronUtil.start();
+//        for (; ; ) {
+//
+//        }
     }
 
     private void miao() {

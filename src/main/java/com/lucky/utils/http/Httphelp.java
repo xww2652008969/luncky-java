@@ -13,17 +13,18 @@ public class Httphelp {
 
     @Getter
     @Setter
-    private static OkHttpClient client;
+    private OkHttpClient client;
 
     public Httphelp() {
         client = new OkHttpClient();
     }
 
     public Httphelp(String host, int port) {
-        Proxy proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(host, port));
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, port));
         client = new OkHttpClient.Builder()
                 .proxy(proxy)
                 .build();
+
     }
 
     public Response Get(String url) throws IOException {
@@ -50,6 +51,7 @@ public class Httphelp {
             }
         }
         Request request = requestBuilder.build();
+
         return client.newCall(request).execute();
     }
 

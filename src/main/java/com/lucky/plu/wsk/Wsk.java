@@ -24,7 +24,7 @@ import static java.lang.Thread.sleep;
 
 @BotPlugin
 public class Wsk extends BasePlugins {
-    private static boolean open = true;
+    private static boolean open = false;
 
     private static Path path = Paths.get(System.getProperty("user.dir")).resolve("Wskconfig.json");
     //通过服务器id推送给群的列表
@@ -90,7 +90,7 @@ public class Wsk extends BasePlugins {
                 if (REVERSE_SERVERMAP.get(s[1]) != null) {
                     LogUtils.info(this.getClass(), String.format("获取服务器数据成功:%s", s[1]));
                     if (WskDataList.get(REVERSE_SERVERMAP.get(s[1])) != null) {
-                        buildpushchat(message.getGroupId(), WskDataList.get(REVERSE_SERVERMAP.get(s[1])));
+                        buildchat(message.getGroupId(), WskDataList.get(REVERSE_SERVERMAP.get(s[1])));
                         return;
                     } else {
                         LogUtils.info(this.getClass(), String.format("获取缓存数据为空,服务器信息:%s  缓存数据:%s", s[1], WskDataList));
@@ -150,17 +150,17 @@ public class Wsk extends BasePlugins {
     @Override
     public void push() {
 
-        readconfig();
-        PushCd.init();
-        //每分钟执行  尝试推送数据
-        CronUtil.schedule("0 * * * * *", (Task) () -> pushData());
-        //每3分轮询
-        CronUtil.schedule("0 */3 * * * *", (Task) () -> getData());
-        CronUtil.setMatchSecond(true);
-        CronUtil.start();
-        for (; ; ) {
-
-        }
+//        readconfig();
+//        PushCd.init();
+//        //每分钟执行  尝试推送数据
+//        CronUtil.schedule("0 * * * * *", (Task) () -> pushData());
+//        //每3分轮询
+//        CronUtil.schedule("0 */3 * * * *", (Task) () -> getData());
+//        CronUtil.setMatchSecond(true);
+//        CronUtil.start();
+//        for (; ; ) {
+//
+//        }
     }
 
 
@@ -206,9 +206,23 @@ public class Wsk extends BasePlugins {
 
     }
 
+    private Boolean buildchat(Long groupId, ApiResponse chatdata) {
+        String s = getTask(chatdata);
+        postApi.createGroupMessage(groupId);
+        postApi.chatMessage.addText(String.format("%s 宇宙合建信息\n", SERVERMAP.get(chatdata.getServerId())));
+        postApi.chatMessage.addText(String.format("当前天气:%s\n", WeatherConstants.get(chatdata.getData().get(0).getWeatherId())));
+        if (!s.equals("没有任务")) {
+            postApi.chatMessage.addText(String.format("任务类型:无"));
+        }
+        postApi.chatMessage.addText(String.format("任务类型:%s\n", s));
+        postApi.chatMessage.addText(String.format("任务信息:%s", chatdata.getData().get(0).getMessage()));
+        postApi.sendGroupMsg();
+        return true;
+    }
+
     private Boolean buildpushchat(Long groupId, ApiResponse chatdata) {
         String s = getTask(chatdata);
-        if (s.equals("没有任务")) {
+        if (!s.equals("紧急任务")) {
             return false;
         }
         postApi.createGroupMessage(groupId);
@@ -324,7 +338,7 @@ public class Wsk extends BasePlugins {
                     continue;
                 }
                 var t = LocalDateTime.now();
-                cddata.removeIf(d -> (Duration.between(t, d.Addtime).toSeconds() > d.removetime));
+                cddata.removeIf(d -> (Math.abs(Duration.between(t, d.Addtime).toSeconds()) > d.removetime));
             }
         }
 
